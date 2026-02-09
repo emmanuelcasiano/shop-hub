@@ -1,9 +1,14 @@
 import { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Auth() {
     const [mode, setMode] = useState("signup");
+    const [error, setError] = useState(null);
+
+    const navigate = useNavigate;
+
     const { signUp, user, logout, login } = useContext(AuthContext);
 
     const {
@@ -13,11 +18,21 @@ export default function Auth() {
     } = useForm();
 
     function onSubmit(data) {
+        setError(null);
+        let result;
         if (mode === "signup") {
-            signUp(data.email, data.password);
+            result = signUp(data.email, data.password);
         } else {
-            login(data.email, data.password);
+            result = login(data.email, data.password);
         }
+
+        if (result.success) {
+            navigate("/");
+        } else {
+            setError(result.error);
+        }
+
+        console.log(result);
     }
 
     return (
@@ -28,6 +43,7 @@ export default function Auth() {
                     {user && <button onClick={logout}>logout</button>}
                     <h1 className="page-title">{mode === "signup" ? "Sign Up" : "Login"}</h1>
                     <form action="" className="auth-form" onSubmit={handleSubmit(onSubmit)}>
+                        {error && <div className="error-message">{error}</div>}
                         <div className="form-group">
                             <label className="form-label" htmlFor="email">
                                 Email
